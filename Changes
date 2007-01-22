@@ -1,0 +1,9 @@
+Revision history for Perl extension File::FilterFuncs.
+
+0.50  Thu Jan 18 20:43:29 CST 2007
+	- Included the main code and tests.
+
+0.01  Thu Jan  4 20:08:59 2007
+	- original version; created by h2xs 1.23 with options
+		-AX -n File::FilterFuncs
+

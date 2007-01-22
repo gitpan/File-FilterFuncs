@@ -1,0 +1,152 @@
+
+=head1 NAME
+
+File::FilterFuncs - specify filter functions for files
+
+=head1 SYNOPSIS
+
+ use File::FilterFuncs qw(filters);
+
+ filters('source.txt',
+     sub { uc $_ },
+     'dest.txt'
+ );
+
+=head1 INTRODUCTION
+
+C<File::FilterFuncs> makes it easy to perform transformations on
+files. When you use this module, you specify a group of filter
+functions that perform transformations on the lines in a source
+file. Those transformed lines are written to the destination file
+that you specify. For example, this code coverts an entire file
+to upper-case, line-by-line:
+
+ use File::FilterFuncs qw(filters);
+
+ filters('source.txt',
+     sub { uc $_ },
+     'dest.txt'
+ );
+
+The entire source file is not read into memory. Instead it is
+read one line at a time, and the destination file is written one
+line at a time.
+
+Just as Perl's concept of a line can be changed by
+setting C<$/>, so the C<filters> function's idea of a line
+can also be changed by specifying a value for C<$/> in
+the call to C<filters>:
+
+ my $pad = "\0" x 2;
+ filters('source.dat',
+    '$/' => 1022,
+    sub { $_ . $pad },
+    'dest.dat'
+ );
+
+Filter functions are invoked in the order in which they are seen.
+This code upper-cases then puts inside parenthses every line in
+'source.txt' and copies the output to 'dest.txt':
+
+ filters ('source.txt',
+    sub { uc $_ },
+    sub { chomp $_; "($_)\n" },
+    'dest.txt'
+ );
+
+The current line that is being worked on is in C<$_>. The return
+value of each filter function is reassigned to C<$_> for the
+benefit of the next filter function. 
+
+The C<filters> subroutine expects its first argument to be the
+name of the source file, and the last argument should be the name
+of the destination file. The function C<filters> will C<die>
+if either one of the file names is missing or if they are inaccessible.
+
+=head1 OPTIONS
+
+A few options determine how the C<filters> subroutine works.
+
+=over
+
+=item C<binmode>
+
+C<Binmode> lets you specify a layer to be used for the input
+data. For example, this will read a utf-8 file and write the data
+using the default output layer:
+
+ filters (
+    'source.txt',
+    binmode => ':utf8',
+    'dest.txt',
+ );
+
+=item C<boutmode>
+
+C<Boutmode> lets the programmer specify a layer to be used for
+writing the output data. For example, this code on a Linux
+platform should read text data using the Linux end-of-line format
+and write it using the DOS (CRLF) end-of-line format:
+
+ filters (
+    'source.txt',
+    boutmode => ':crlf',
+    'dest.txt',
+ );
+
+=item C<$/>
+
+Setting C<$/> lets you determine how an end-of-line is
+recognized. Set this option to the same value that you would set
+the C<$/> variable to in a program. For example, suppose a file
+contains this:
+
+  ABCDEFGHIJKL
+
+The following program should write three letters at a time to the
+output file:
+
+ filters (
+    'source.txt',
+    '$/' => 3,
+    sub { "$_\n" },
+    'dest.txt',
+ );
+
+
+=back
+
+
+=head1 BUGS
+
+E-mail bug reports to mumia.w.18.spam [at] earthlink.net .
+
+=head1 TODO
+
+=over
+
+=item *
+
+before_grep => sub { ... },
+
+=item *
+
+after_grep => sub { ... },
+
+=item *
+
+Allow file handles to be used for input and output.
+
+=back
+
+=head1 AUTHOR
+
+ Copyright 2007 Mumia Wotse
+ Mumia Wotse <mumia.w.18.spam+nospam [at] earthlink.net>
+
+This program is under the General Public License (GPL).
+
+=cut
+
+
+ vim: wm=15 et
