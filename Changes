@@ -1,5 +1,17 @@
 Revision history for Perl extension File::FilterFuncs.
 
+0.51  Sun Jan 28 18:59:28 CST 2007
+	- Corrected POD error regarding '$/' => \3 (backslash added).
+	- Added test for using fixed line lengths.
+	- Added ignore_line() to allow functions to filter lines.
+	- We die if the source and destination files are the same;
+	  thanks to Uri Guttman <uri[[at]]stemsystems.com> for pointing out
+	  the potential problem.
+	- Thanks to suggestions from Uri Guttman <uri[[at]]stemsystems.com>,
+	  paragraph reading ($/ = '') and slurp mode ($/ = undef) are
+	  now supported.
+
+
 0.50  Thu Jan 18 20:43:29 CST 2007
 	- Included the main code and tests.
 

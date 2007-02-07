@@ -1,4 +1,4 @@
-File-FilterFuncs version 0.50
+File-FilterFuncs version 0.51
 =============================
 
 File::FilterFuncs makes it easy to perform transformations on
@@ -29,7 +29,7 @@ To install this module type the following:
 
 DEPENDENCIES
 
-   Only Perl 5.8.4 or above.
+   none
 
 COPYRIGHT AND LICENCE
 

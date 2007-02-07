@@ -63,6 +63,23 @@ name of the source file, and the last argument should be the name
 of the destination file. The function C<filters> will C<die>
 if either one of the file names is missing or if they are inaccessible.
 
+If you need to actually filter using File::FilterFuncs :-) ,
+you can call ignore_line() from within your filter function. This
+program ignores any line that contains only whitespace:
+
+  use File::FilterFuncs qw(filters ignore_line);
+
+  my $func = sub {
+      unless (/[^\s]/) {
+          ignore_line();
+          return;
+      };
+      $_;
+  };
+
+  filters('source.txt', $func, 'dest.txt');
+
+
 =head1 OPTIONS
 
 A few options determine how the C<filters> subroutine works.
@@ -108,7 +125,7 @@ output file:
 
  filters (
     'source.txt',
-    '$/' => 3,
+    '$/' => \3,
     sub { "$_\n" },
     'dest.txt',
  );
@@ -119,7 +136,26 @@ output file:
 
 =head1 BUGS
 
-E-mail bug reports to mumia.w.18.spam [at] earthlink.net .
+The source and destination files cannot be the same. If the
+source and destionation files have the same name and path,
+C<filters> dies with an appropriate error message. If symbolic
+or hard-linking is used to give the same file two
+different names, the results are undefined.
+
+This module is not thread-safe due to the use of
+the package variable C<$ignore_line>.
+
+E-mail bug reports to mumia.w.18.spam+nospam [at] earthlink.net .
+
+=head1 CREDITS
+
+Thanks go to Uri Guttman <uri [at] stemsystems.com> for several
+helpful suggestions including enabling the slurp and paragraph
+modes and dealing with filtering a file onto itself.
+
+Andy <anedza [at] infotek-consulting.com> also commented on the
+need to explain or simplify the use of the callback filter
+functions.
 
 =head1 TODO
 
@@ -127,15 +163,12 @@ E-mail bug reports to mumia.w.18.spam [at] earthlink.net .
 
 =item *
 
-before_grep => sub { ... },
-
-=item *
-
-after_grep => sub { ... },
-
-=item *
-
 Allow file handles to be used for input and output.
+
+=item *
+
+Merge the functionalities of both line selection and line
+transformation into a single callback subroutine.
 
 =back
 
