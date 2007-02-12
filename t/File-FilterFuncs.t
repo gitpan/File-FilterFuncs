@@ -1,8 +1,7 @@
 use strict;
 use warnings;
-use Test::More tests => 9;
+use Test::More tests => 12;
 use File::FilterFuncs qw(:all);
-# use File::Slurp;
 use File::Spec::Functions;
 use Fatal qw(open close);
 use Fcntl qw(:seek);
@@ -18,7 +17,7 @@ filters ($source, testfile(1));
 ok(diff($source,testfile(1)), 'simple copy');
 
 # Perform a simple copy with a function.
-filters ($source, sub { $_ }, testfile(2));
+filters ($source, sub { 1 }, testfile(2));
 ok(diff($source,testfile(2)), 'simple copy with function');
 
 # Uppercase the test file.
@@ -30,7 +29,7 @@ while (<$infh>) {
 close $outfh;
 close $infh;
 
-filters ($source, sub { uc $_ }, testfile('3b'));
+filters ($source, sub { $_ = uc $_; 1 }, testfile('3b'));
 ok(diff(testfile(3),testfile('3b')), 'convert to uppercase');
 
 # Uppercase the test file and add a prefix.
@@ -42,7 +41,8 @@ while (<$infh>) {
 close $outfh;
 close $infh;
 
-filters ($source, sub { uc $_ }, sub { "Line:" . $_ }, testfile('4b'));
+filters ($source, sub { $_ = uc $_; 1 },
+	sub { $_ = "Line:" . $_; 1 }, testfile('4b'));
 ok(diff(testfile(4),testfile('4b')), 'uppercase and add a prefix');
 
 # Change the file's encoding to utf-8:
@@ -80,22 +80,11 @@ open ($outfh, '>', testfile('7b'));
 close $outfh;
 close $infh;
 
-filters (testfile(7), '$/' => \3, sub { "$_\n" }, testfile('7c'));
+filters (testfile(7), '$/' => \3,
+	sub { $_ = "$_\n"; 1 }, testfile('7c'));
 ok(diff(testfile('7b'), testfile('7c')),
 	'setting $/ to an integer reference');
 
-# # Test using the 'grepper' option.
-# open ($infh, '<', $source);
-# open ($outfh, '>', testfile(8));
-# while (<$infh>) {
-# 	last if $. >= 5;
-# 	print $outfh $_;
-# }
-# close $outfh;
-# close $infh;
-# 
-# filters ($source, grepper => sub { $. < 5 }, testfile('8b'));
-# ok(diff(testfile(8),testfile('8b')),'grepper option');
 
 # Test reading paragraphs.
 open ($infh, '<', $source);
@@ -107,27 +96,33 @@ open ($outfh, '>', testfile(8));
 close $outfh;
 close $infh;
 
-filters ($source, '$/' => '', sub { "GROUP:$_" }, testfile('8b'));
+filters ($source, '$/' => '',
+	sub { $_ = "GROUP:$_"; 1 }, testfile('8b'));
 ok(diff(testfile(8),testfile('8b')), 'paragraph reading mode ($/ = "")');
 
-# Test filtering lines.
+# Test the "filter_funcs" function:
+filter_funcs($source, testfile(9));
+ok(diff($source,testfile(9)), 'use "filter_funcs" (alternate name)');
+
+# Filter out lines with only whitespace.
 open ($infh, '<', $source);
-open ($outfh, '>', testfile(9));
-while (<$infh>) {
-	print $outfh $_ if (/[^\s]/);
-}
+open ($outfh, '>', testfile(10));
+print $outfh grep /\S/, <$infh>;
 close $outfh;
 close $infh;
 
-my $sub = sub {
-	unless (/[^\s]/) {
-		ignore_line();
-		return;
-	};
-	$_;
-};
-filters($source, $sub, testfile('9b'));
-ok(diff(testfile(9),testfile('9b')),'ignore_lines');
+filters ($source, sub { /\S/ }, testfile('10b'));
+ok(diff(testfile(10),testfile('10b')), 'filter out lines with only whitespace');
+
+# Use the $KEEP_LINE value.
+filters ($source, sub { $KEEP_LINE }, testfile(11));
+ok(diff($source,testfile(11)),'$KEEP_LINE value');
+
+# Use the $IGNORE_LINE value.
+filters ($source, 
+	sub { return $IGNORE_LINE unless /\S/ },
+	testfile(12));
+ok(diff(testfile(10),testfile(12)),'$IGNORE_LINE value');
 
 t::FF_Common::cleanup;
 
@@ -135,8 +130,8 @@ t::FF_Common::cleanup;
 
 sub diff {
 	my ($name1, $name2) = @_;
-	my $file1 = slurp_file($name1, binmode => ':raw');
-	my $file2 = slurp_file($name2, binmode => ':raw');
+	my $file1 = slurp_file($name1);
+	my $file2 = slurp_file($name2);
 	$file1 eq $file2;
 }
 

@@ -8,7 +8,7 @@ File::FilterFuncs - specify filter functions for files
  use File::FilterFuncs qw(filters);
 
  filters('source.txt',
-     sub { uc $_ },
+     sub { $_ = uc $_; 1 },
      'dest.txt'
  );
 
@@ -24,8 +24,21 @@ to upper-case, line-by-line:
  use File::FilterFuncs qw(filters);
 
  filters('source.txt',
-     sub { uc $_ },
+     sub { $_ = uc $_; 1 },
      'dest.txt'
+ );
+
+The "1" at the end of the filter subroutine tells C<filters> to
+keep all the lines. The filter subroutine should return 1 for any
+lines that should be kept, and it should return 0 for any lines
+that should be ignored. This program copies only lines that
+contain something besides just whitespace:
+
+ use File::FilterFuncs qw(filters);
+
+ filters('source.txt',
+    sub { /\S/ },
+    'dest.txt'
  );
 
 The entire source file is not read into memory. Instead it is
@@ -40,7 +53,7 @@ the call to C<filters>:
  my $pad = "\0" x 2;
  filters('source.dat',
     '$/' => 1022,
-    sub { $_ . $pad },
+    sub { $_ .= $pad; 1 },
     'dest.dat'
  );
 
@@ -49,35 +62,17 @@ This code upper-cases then puts inside parenthses every line in
 'source.txt' and copies the output to 'dest.txt':
 
  filters ('source.txt',
-    sub { uc $_ },
-    sub { chomp $_; "($_)\n" },
+    sub { $_ = uc $_; 1 },
+    sub { chomp $_; $_ = "($_)\n"; 1 },
     'dest.txt'
  );
 
-The current line that is being worked on is in C<$_>. The return
-value of each filter function is reassigned to C<$_> for the
-benefit of the next filter function. 
+Obviously, the current line that is being worked on is in C<$_>.
 
 The C<filters> subroutine expects its first argument to be the
 name of the source file, and the last argument should be the name
 of the destination file. The function C<filters> will C<die>
 if either one of the file names is missing or if they are inaccessible.
-
-If you need to actually filter using File::FilterFuncs :-) ,
-you can call ignore_line() from within your filter function. This
-program ignores any line that contains only whitespace:
-
-  use File::FilterFuncs qw(filters ignore_line);
-
-  my $func = sub {
-      unless (/[^\s]/) {
-          ignore_line();
-          return;
-      };
-      $_;
-  };
-
-  filters('source.txt', $func, 'dest.txt');
 
 
 =head1 OPTIONS
@@ -126,10 +121,35 @@ output file:
  filters (
     'source.txt',
     '$/' => \3,
-    sub { "$_\n" },
+    sub { $_ = "$_\n"; 1 },
     'dest.txt',
  );
 
+
+=back
+
+=head1 NOTES
+
+=over
+
+=item Alternate function name
+
+If you consider the function name C<filters> to be too generic,
+you can import the name C<filter_funcs> instead.
+
+=item Convenience return values
+
+For the programmer's convenience and to facilitate
+self-documenting code, the values C<$KEEP_LINE> and
+C<$IGNORE_LINE> can be exported. As an example, this is another
+program to filter out lines containing only whitespace:
+
+  use File::FilterFuncs qw(filters $IGNORE_LINE);
+
+  filters('source.txt',
+        sub { return $IGNORE_LINE unless /\S/ },
+        'dest.txt'
+  );
 
 =back
 
@@ -141,9 +161,6 @@ source and destionation files have the same name and path,
 C<filters> dies with an appropriate error message. If symbolic
 or hard-linking is used to give the same file two
 different names, the results are undefined.
-
-This module is not thread-safe due to the use of
-the package variable C<$ignore_line>.
 
 E-mail bug reports to mumia.w.18.spam+nospam [at] earthlink.net .
 
@@ -165,10 +182,6 @@ functions.
 
 Allow file handles to be used for input and output.
 
-=item *
-
-Merge the functionalities of both line selection and line
-transformation into a single callback subroutine.
 
 =back
 

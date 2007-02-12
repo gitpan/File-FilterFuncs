@@ -1,5 +1,12 @@
 Revision history for Perl extension File::FilterFuncs.
 
+0.52  Wed Feb  7 21:13:46 CST 2007
+	- Minor cleanups for the POD and test scripts.
+	- Major change: The anonymous subs must return 1
+	  to keep lines.
+
+
+
 0.51  Sun Jan 28 18:59:28 CST 2007
 	- Corrected POD error regarding '$/' => \3 (backslash added).
 	- Added test for using fixed line lengths.

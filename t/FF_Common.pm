@@ -4,11 +4,12 @@ use warnings;
 use POSIX qw(tmpnam);
 use Exporter ();
 use File::Spec::Functions;
+use Fatal qw(open close);
 
 BEGIN {
 	our @ISA = qw(Exporter);
 	our @EXPORT = qw(%Common slurp_file unslurp_file);
-	our @EXPORT_OK = qw(%Common);
+	our @EXPORT_OK = @EXPORT;
 }
 
 

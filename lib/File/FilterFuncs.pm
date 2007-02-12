@@ -6,16 +6,18 @@ use Exporter ();
 use Carp qw(croak confess);
 
 BEGIN {
-	our $VERSION = '0.51';
-	our @EXPORT_OK = qw(filters ignore_line);
+	our $VERSION = '0.52';
+	$VERSION = eval $VERSION;
+	our @EXPORT_OK = qw(filters filter_funcs $KEEP_LINE $IGNORE_LINE);
 	our %EXPORT_TAGS = (all => [@EXPORT_OK]);
 	our @ISA = qw(Exporter);
+	*KEEP_LINE = \1;
+	*IGNORE_LINE = \0;
 }
 
 # These are options that accept arguments.
 my @arg_options = qw(binmode boutmode grepper $/);
 my %arg_options = map +($_ => 1), @arg_options;
-our $ignore_line;
 
 sub filters {
 	local $_;
@@ -33,14 +35,11 @@ sub filters {
 	NEXTLINE:
 	while ($_ = <$in>) {
 
-		# if ($opts{grepper} && (!$opts{grepper}->())) {
-			# next;
-		# }
-
-		$ignore_line = 0;
+		# $ignore_line = 0;
 		foreach my $transform (@{$opts{subs}}) {
-			$_ = $transform->();
-			next NEXTLINE if ($ignore_line);
+			# $_ = $transform->();
+			# next NEXTLINE if ($ignore_line);
+			next NEXTLINE unless $transform->();
 		}
 		print $out $_;
 	}
@@ -75,9 +74,10 @@ sub parse_args {
 	%hash;
 }
 
-sub ignore_line {
-	$ignore_line = 1;
+BEGIN {
+	*filter_funcs = \&filters;
 }
+
 
 
 1;
