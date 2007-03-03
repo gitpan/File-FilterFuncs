@@ -1,4 +1,4 @@
-File-FilterFuncs version 0.52
+File-FilterFuncs version 0.521
 =============================
 
 File::FilterFuncs makes it easy to perform transformations on
@@ -11,7 +11,7 @@ to upper-case, line-by-line:
  use File::FilterFuncs qw(filters);
 
  filters('source.txt',
-     sub { uc $_ },
+     sub { uc $_; 1 },
      'dest.txt'
  );
 
