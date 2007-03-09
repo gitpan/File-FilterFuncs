@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 12;
+use Test::More tests => 14;
 use File::FilterFuncs qw(:all);
 use File::Spec::Functions;
 use Fatal qw(open close);
@@ -123,6 +123,13 @@ filters ($source,
 	sub { return $IGNORE_LINE unless /\S/ },
 	testfile(12));
 ok(diff(testfile(10),testfile(12)),'$IGNORE_LINE value');
+
+# $Common{tempdir} should be a directory.
+ok(-d $Common{tempdir}, "$Common{tempdir} is a directory.");
+
+# Testfiles should be in the tempdir.
+ok(catfile($Common{tempdir},'t.1') eq testfile(1),
+	'basic testfile name constrution');
 
 t::FF_Common::cleanup;
 
