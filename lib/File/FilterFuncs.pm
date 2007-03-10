@@ -6,7 +6,7 @@ use Exporter ();
 use Carp qw(croak confess);
 
 BEGIN {
-	our $VERSION = '0.52_11';
+	our $VERSION = '0.52_12';
 	$VERSION = eval $VERSION;
 	our @EXPORT_OK = qw(filters filter_funcs $KEEP_LINE $IGNORE_LINE);
 	our %EXPORT_TAGS = (all => [@EXPORT_OK]);

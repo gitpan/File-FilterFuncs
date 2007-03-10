@@ -10,7 +10,19 @@ use t::FF_Common;
 t::FF_Common::init();
 
 my ($infh, $outfh);
-my $source = catfile(t => 'source.txt');
+my $source = catfile($Common{tempdir}, 't.s');
+
+# Create a local copy of the source file that uses the
+# system's end-of-line format:
+open ($infh, '<', catfile(t => 'source.txt'));
+open ($outfh, '>', $source);
+while (my $line = <$infh>) {
+	print $outfh $line;
+}
+close $outfh;
+close $infh;
+undef $infh;
+undef $outfh;
 
 # Perform a simple copy.
 filters ($source, testfile(1));
