@@ -6,7 +6,7 @@ use Exporter ();
 use Carp qw(croak confess);
 
 BEGIN {
-	our $VERSION = '0.52_12';
+	our $VERSION = '0.53';
 	$VERSION = eval $VERSION;
 	our @EXPORT_OK = qw(filters filter_funcs $KEEP_LINE $IGNORE_LINE);
 	our %EXPORT_TAGS = (all => [@EXPORT_OK]);
@@ -35,10 +35,7 @@ sub filters {
 	NEXTLINE:
 	while ($_ = <$in>) {
 
-		# $ignore_line = 0;
 		foreach my $transform (@{$opts{subs}}) {
-			# $_ = $transform->();
-			# next NEXTLINE if ($ignore_line);
 			next NEXTLINE unless $transform->();
 		}
 		print $out $_;

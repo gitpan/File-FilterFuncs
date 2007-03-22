@@ -1,5 +1,8 @@
 Revision history for Perl extension File::FilterFuncs.
 
+0.53  Thu Mar 22 06:05:10 CDT 2007
+	- Fixed end-of-line issues on Windows for t/File-FilterFuncs.t.
+
 0.521	Sat Mar  3 03:12:51 CST 2007
 	- Fixed the README file.
 
